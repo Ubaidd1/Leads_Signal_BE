@@ -9,8 +9,10 @@ settings = get_settings()
 
 
 def make_engine(url: str, **kwargs) -> Engine:
-    # Force UTF-8 on the client side: on a SQL_ASCII server psycopg would otherwise return bytes.
-    return create_engine(url, pool_pre_ping=True, connect_args={"client_encoding": "utf8"}, **kwargs)
+    # Force UTF-8 (on a SQL_ASCII server psycopg would otherwise return bytes) and UTC, so API
+    # timestamps do not depend on the database server's local timezone.
+    connect_args = {"client_encoding": "utf8", "options": "-c timezone=UTC"}
+    return create_engine(url, pool_pre_ping=True, connect_args=connect_args, **kwargs)
 
 
 engine = make_engine(
