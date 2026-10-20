@@ -1,0 +1,16 @@
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["env", "alembic/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "SIM"]
+ignore = ["B008", "S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S105", "S106"]
+"scripts/**" = ["S105", "S106"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
