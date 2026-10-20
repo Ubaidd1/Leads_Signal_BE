@@ -18,7 +18,13 @@ class Company(UUIDPrimaryKey, Timestamps, Base):
     __tablename__ = "companies"
     __table_args__ = (
         Index("uq_companies_shared_slug", "slug", unique=True, postgresql_where=text("workspace_id IS NULL")),
-        Index("uq_companies_workspace_slug", "workspace_id", "slug", unique=True, postgresql_where=text("workspace_id IS NOT NULL")),
+        Index(
+            "uq_companies_workspace_slug",
+            "workspace_id",
+            "slug",
+            unique=True,
+            postgresql_where=text("workspace_id IS NOT NULL"),
+        ),
         Index("ix_companies_technologies", "technologies", postgresql_using="gin"),
     )
 

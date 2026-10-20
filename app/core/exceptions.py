@@ -27,6 +27,11 @@ class NotAuthenticated(AppError):
     message = "Authentication is required."
 
 
+class InvalidCredentials(NotAuthenticated):
+    code = "INVALID_CREDENTIALS"
+    message = "Invalid email or password."
+
+
 class PermissionDenied(AppError):
     status_code = 403
     code = "PERMISSION_DENIED"
@@ -84,21 +89,30 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def handle_app_error(_request: Request, exc: AppError):
         headers = {"Retry-After": str(exc.retry_after)} if isinstance(exc, RateLimited) else None
-        return JSONResponse(error_body(exc.code, exc.message, exc.details), status_code=exc.status_code, headers=headers)
+        return JSONResponse(
+            error_body(exc.code, exc.message, exc.details), status_code=exc.status_code, headers=headers
+        )
 
     @app.exception_handler(RequestValidationError)
     async def handle_validation_error(_request: Request, exc: RequestValidationError):
         details = [
-            {"field": ".".join(str(part) for part in err["loc"] if part not in ("body", "query", "path")), "message": err["msg"]}
+            {
+                "field": ".".join(str(part) for part in err["loc"] if part not in ("body", "query", "path")),
+                "message": err["msg"],
+            }
             for err in exc.errors()
         ]
-        return JSONResponse(error_body("VALIDATION_ERROR", "The request contains invalid data.", details), status_code=422)
+        return JSONResponse(
+            error_body("VALIDATION_ERROR", "The request contains invalid data.", details), status_code=422
+        )
 
     @app.exception_handler(StarletteHTTPException)
     async def handle_http_error(_request: Request, exc: StarletteHTTPException):
         code = _STATUS_CODES.get(exc.status_code, "HTTP_ERROR")
         message = exc.detail if isinstance(exc.detail, str) else "The request could not be processed."
-        return JSONResponse(error_body(code, message), status_code=exc.status_code, headers=getattr(exc, "headers", None))
+        return JSONResponse(
+            error_body(code, message), status_code=exc.status_code, headers=getattr(exc, "headers", None)
+        )
 
     @app.exception_handler(Exception)
     async def handle_unexpected(_request: Request, exc: Exception):

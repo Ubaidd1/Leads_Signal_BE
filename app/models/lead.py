@@ -91,11 +91,12 @@ class LeadScore(UUIDPrimaryKey, Base):
 
 
 class HiringSignal(UUIDPrimaryKey, Base):
-    """A dated hiring event for a company, optionally tied to a specific lead."""
+    """A dated hiring event for a company, optionally tied to a specific lead. Scoped like Company."""
 
     __tablename__ = "hiring_signals"
     __table_args__ = (Index("ix_hiring_signals_company_occurred", "company_id", "occurred_at"),)
 
+    workspace_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
     company_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("companies.id", ondelete="CASCADE"))
     lead_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("leads.id", ondelete="CASCADE"), index=True)
     signal_type: Mapped[str] = mapped_column(String(50))
